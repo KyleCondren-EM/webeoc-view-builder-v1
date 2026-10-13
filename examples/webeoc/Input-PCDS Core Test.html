@@ -1,0 +1,1183 @@
+<html lang="en" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<!-- Input-PCDS Core Test
+     Table: any scratch test board table. Every named control below becomes a
+     text column on first publish, so the board needs no table setup.
+     Purpose: a kitchen sink Input view that exercises every decided PCDS core
+     Input component on pcds-libs and pcds-core ALONE (plus the TextScale and
+     Geocode add-ons), with no alpha file loaded. It is a render and behavior
+     probe, not a board: the names and values are fictional.
+     LIVE in the core today: SlimSelect, typed date, time and datetime, phone
+     mask, clear x, chip x, tooltips, menus, Text size, Developer mode, scroll
+     spy rail, tour, tabs, meters, completion meter, counts, stamps, source tags
+     with tip cards, the ack chip, the geocode field and its hero, dialogs.
+     LOOK ONLY (CSS in the core, no JS yet; every one is tagged Look only on the
+     page): stepper buttons, restricted Show and locked Unlock, contact card
+     actions, statement card acknowledge, section tallies, save line track,
+     live rules, auto filled block gate, keys registry.
+     Save is the native savebutton. Audit columns ride insertfields and
+     updatefields and bind through the Record Metadata section. -->
+  <head>
+    <title>PCDS Core Test</title>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no" name="viewport" />
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible" />
+    <recordmonitoring />
+    <link href="//webeocboardfiles.juvare.com/board/latest/css/material-kit.min.css" media="all" path="/css/material-kit.min.css" rel="stylesheet" />
+    <link boardresource="pcds-libs.css" rel="stylesheet" />
+    <link boardresource="pcds-core.css" rel="stylesheet" />
+    <style type="text/css">
+      /*<![CDATA[*/
+      /* CORE GAP, view-local until pcds-core.css carries it: Juvare
+         material-kit.min.css (Bootstrap reboot) sets dialog display block,
+         and the core styles only .pcds-dialog[open], so a closed authored
+         dialog draws inline at the foot of the page. */
+      dialog.pcds-dialog:not([open]) { display: none; }
+      /*]]>*/
+    </style>
+  </head>
+  <body>
+    <applytheme />
+    <form aria-label="Data" class="mb-0" id="input-form">
+      <insertfields id="insert_fields">
+        <field name="origin_name">@sessionname</field>
+        <field name="origin_position">@positionname</field>
+        <field name="origin_email">@sessionemail</field>
+        <field name="origin_datetime">GETUTCDATE()</field>
+        <field name="edit_name">@sessionname</field>
+        <field name="edit_position">@positionname</field>
+        <field name="edit_email">@sessionemail</field>
+        <field name="edit_datetime">GETUTCDATE()</field>
+      </insertfields>
+      <updatefields id="update_fields">
+        <field name="edit_name">@sessionname</field>
+        <field name="edit_position">@positionname</field>
+        <field name="edit_email">@sessionemail</field>
+        <field name="edit_datetime">GETUTCDATE()</field>
+      </updatefields>
+
+      <div class="pcds-shell">
+
+        <!-- ================= [ Topnav ] ================= -->
+        <header class="pcds-shell__top pcds-ends pcds-raised">
+          <div class="pcds-cluster">
+            <span class="pcds-topnav-brand">
+              <agencyinfo type="primarylogo" />
+            </span>
+            <span class="pcds-topnav__tile" aria-hidden="true"><i class="fa-solid fa-flask-vial"></i></span>
+            <div>
+              <div class="pcds-topnav__title">
+                <choose>
+                  <when test="/data/@dataid = '0'">New Test Record</when>
+                  <otherwise>Edit Test Record</otherwise>
+                </choose>
+              </div>
+              <div class="pcds-topnav__sub">
+                <incidentname />
+              </div>
+            </div>
+          </div>
+          <div class="pcds-cluster pcds-topnav-actions">
+            <span class="dropdown">
+              <button type="button" class="pcds-toolbar-more pcds-trigger-kebab" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="More board actions"><i class="fa-solid fa-ellipsis" aria-hidden="true"></i></button>
+              <div class="dropdown-menu dropdown-menu-right pcds-menu">
+                <div class="pcds-menu__head">View helpers</div>
+                <a class="pcds-menu-item" href="#" data-pcds-tour="pcdstest:layout"><i class="fa-solid fa-map pcds-menu-item__icon" aria-hidden="true"></i><span class="pcds-menu-item__text">Page tour</span></a>
+                <a class="pcds-menu-item" href="#" data-pcdstest-open="dlg-keys"><i class="fa-solid fa-keyboard pcds-menu-item__icon" aria-hidden="true"></i><span class="pcds-menu-item__text">Keyboard shortcuts</span></a>
+                <a class="pcds-menu-item" href="#" data-pcdstest-print="true"><i class="fa-solid fa-print pcds-menu-item__icon" aria-hidden="true"></i><span class="pcds-menu-item__text">Print</span></a>
+                <div class="pcds-menu-divider"></div>
+                <a class="pcds-menu-item" href="#sec-meta"><i class="fa-solid fa-code pcds-menu-item__icon" aria-hidden="true"></i><span class="pcds-menu-item__text">Jump to Record Metadata</span></a>
+              </div>
+            </span>
+          </div>
+        </header>
+
+        <!-- ================= [ Section rail ] ================= -->
+        <nav class="pcds-shell__rail" aria-label="Sections">
+          <a class="pcds-navlink is-active" href="#sec-basics"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Basics</a>
+          <a class="pcds-navlink" href="#sec-dates"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i> Dates</a>
+          <a class="pcds-navlink" href="#sec-choices"><i class="fa-solid fa-list-check" aria-hidden="true"></i> Choices</a>
+          <a class="pcds-navlink" href="#sec-survey"><i class="fa-solid fa-clipboard-question" aria-hidden="true"></i> Survey</a>
+          <a class="pcds-navlink" href="#sec-location"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Location</a>
+          <a class="pcds-navlink" href="#sec-access"><i class="fa-solid fa-lock" aria-hidden="true"></i> Access</a>
+          <a class="pcds-navlink" href="#sec-people"><i class="fa-solid fa-address-book" aria-hidden="true"></i> People</a>
+          <a class="pcds-navlink" href="#sec-ack"><i class="fa-solid fa-file-signature" aria-hidden="true"></i> Sign-off</a>
+          <a class="pcds-navlink" href="#sec-files"><i class="fa-solid fa-paperclip" aria-hidden="true"></i> Files</a>
+          <a class="pcds-navlink" href="#sec-marks"><i class="fa-solid fa-shapes" aria-hidden="true"></i> Marks</a>
+          <a class="pcds-navlink" href="#sec-status"><i class="fa-solid fa-signal" aria-hidden="true"></i> Status</a>
+          <a class="pcds-navlink" href="#sec-empty"><i class="fa-solid fa-inbox" aria-hidden="true"></i> Empty</a>
+        </nav>
+
+        <main class="pcds-shell__main" aria-label="Main Section">
+
+          <!-- ================= [ Identity header ] ================= -->
+          <header class="pcds-identity pcds-identity--art" id="pcdstest-identity">
+            <if test="/data/@dataid = '0'">
+              <attribute name="class">pcds-identity pcds-identity--art is-new</attribute>
+            </if>
+            <span class="pcds-identity__art" aria-hidden="true"><i class="fa-solid fa-flask-vial"></i></span>
+            <div class="pcds-identity__main">
+              <div class="pcds-identity__eyebrow">
+                <span class="pcds-identity__type">
+                  <choose>
+                    <when test="/data/@dataid = '0'">New Test Record</when>
+                    <otherwise>Editing Test Record</otherwise>
+                  </choose>
+                </span>
+                <span class="pcds-identity__id">
+                  <if test="/data/@dataid = '0'">
+                    <attribute name="class">pcds-identity__id is-empty</attribute>
+                  </if>
+                  <choose>
+                    <when test="/data/@dataid = '0'">ID created when you save</when>
+                    <otherwise>T-<value-of select="/data/@dataid" /></otherwise>
+                  </choose>
+                </span>
+              </div>
+              <h1 class="pcds-identity__name">
+                <choose>
+                  <when test="/data/*[starts-with(name(), 'table_')]/@test_title != ''">
+                    <value-of select="/data/*[starts-with(name(), 'table_')]/@test_title" />
+                  </when>
+                  <otherwise>No test title yet</otherwise>
+                </choose>
+              </h1>
+            </div>
+          </header>
+
+          <!-- ================= [ Legend and intro ] ================= -->
+          <div class="pcds-legend pcds-cluster pcds-req-legend">
+            <span class="pcds-legend__item"><span class="pcds-tag pcds-sm pcds-danger pcds-glyph" data-pcds-req="req"><i class="fa-solid fa-asterisk" aria-hidden="true"></i><span>Required</span></span>Required</span>
+            <span class="pcds-legend__item"><span class="pcds-tag pcds-sm pcds-warning pcds-glyph" data-pcds-req="rec"><i class="fa-solid fa-thumbs-up" aria-hidden="true"></i><span>Recommended</span></span>Recommended</span>
+            <span class="pcds-legend__item"><span class="pcds-tag pcds-sm pcds-blue pcds-glyph"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span>Auto-filled</span></span>Auto-filled</span>
+            <span class="pcds-legend__item"><span class="pcds-tag pcds-sm pcds-neutral"><i class="fa-solid fa-eye" aria-hidden="true"></i><span>Look only</span></span>No core JS yet</span>
+            <span class="pcds-legend__note">Unmarked fields are optional</span>
+          </div>
+
+          <div class="pcds-alert pcds-info mb-3" role="status">
+            <span class="pcds-alert__icon" aria-hidden="true"><i class="fa-solid fa-flask-vial"></i></span>
+            <div class="pcds-alert__body">
+              <div class="pcds-alert__title">PCDS core test view</div>
+              <div class="pcds-alert__message">Every decided Input component on pcds-libs and pcds-core alone. Parts tagged Look only are drawn by the core CSS but have no core behavior yet, so their buttons do nothing. Names and values are fictional.</div>
+            </div>
+          </div>
+
+          <!-- ================= [ 1. Basics ] ================= -->
+          <details class="pcds-section" id="sec-basics" open="open" data-tour-step="1" data-tour-title="Basics" data-tour-text="Text, selects, a multi select, a stepper, a phone mask and a textarea.">
+            <summary class="pcds-section__head">
+              <span class="pcds-section__lead" aria-hidden="true"><i class="fa-solid fa-caret-down"></i></span>
+              <span class="pcds-surface__icon pcds-blue" aria-hidden="true"><i class="fa-solid fa-pen-to-square"></i></span>
+              <span class="pcds-section__titles"><h2 class="pcds-section__title">Basics</h2></span>
+              <span class="pcds-section__actions pcds-cluster"><span class="pcds-count pcds-blue" data-pcds-count="8" aria-label="8 fields" data-toggle="tooltip" data-placement="top" title="8 fields in this section">8</span></span>
+              <span class="pcds-section__sub">Text with a clear x, single and multi SlimSelect, stepper, email, phone mask, textarea.</span>
+            </summary>
+            <div class="pcds-section__body pcds-grid--form">
+              <div class="pcds-grid">
+                <div class="pcds-field pcds-span-12 pcds-span-md-8">
+                  <label for="test_title">Test Title <span class="pcds-tag pcds-sm pcds-danger pcds-glyph" data-pcds-req="req"><i class="fa-solid fa-asterisk" aria-hidden="true"></i><span>Required</span></span> <span class="pcds-tag pcds-sm pcds-quiet pcds-glyph pcds-blue" tabindex="0" data-toggle="tooltip" data-placement="top" title="The headline shown on lists and in the identity header above."><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>More about this field</span></span></label>
+                  <div class="pcds-clearable">
+                    <input id="test_title" class="form-control" type="text" name="test_title" label="Test Title" required="required" placeholder="e.g. Harborview generator check" />
+                  </div>
+                  <div class="form-text pcds-help-stack">
+                    <p class="pcds-help-line pcds-green" data-kind="tip"><i class="fa-solid fa-lightbulb pcds-help-line__ic" aria-hidden="true"></i><span class="pcds-help-line__lead">Tip:</span><span>Type, then press Escape or the x to clear it.</span></p>
+                  </div>
+                </div>
+                <div class="pcds-field pcds-span-12 pcds-span-md-4">
+                  <label for="test_category">Category <span class="pcds-tag pcds-sm pcds-danger pcds-glyph" data-pcds-req="req"><i class="fa-solid fa-asterisk" aria-hidden="true"></i><span>Required</span></span></label>
+                  <select id="test_category" name="test_category" label="Category" required="required">
+                    <option value="Facility Check">Facility Check</option>
+                    <option value="Drill">Drill</option>
+                    <option value="Tabletop Exercise">Tabletop Exercise</option>
+                    <option value="Equipment Test">Equipment Test</option>
+                    <option value="Real Event">Real Event</option>
+                  </select>
+                </div>
+              </div>
+              <div class="pcds-grid">
+                <div class="pcds-field pcds-span-12 pcds-span-md-6">
+                  <label for="test_tags">Equipment Tags <span class="pcds-tag pcds-sm pcds-quiet pcds-glyph pcds-blue" tabindex="0" data-toggle="tooltip" data-placement="top" title="Examples: Generator, Pump, Radio"><i class="fa-solid fa-circle-e" aria-hidden="true"></i><span>Examples</span></span></label>
+                  <select id="test_tags" name="test_tags" label="Equipment Tags" multiple="multiple">
+                    <option value="Generator">Generator</option>
+                    <option value="Fuel Tank">Fuel Tank</option>
+                    <option value="Pump">Pump</option>
+                    <option value="Radio">Radio</option>
+                    <option value="Satellite Phone">Satellite Phone</option>
+                    <option value="Light Tower">Light Tower</option>
+                  </select>
+                  <textarea id="test_tags_value" class="d-none" name="test_tags_value" label="Equipment Tags (JSON)"></textarea>
+                  <div class="form-text pcds-help-stack">
+                    <p class="pcds-help-line" data-kind="note"><i class="fa-solid fa-note-sticky pcds-help-line__ic" aria-hidden="true"></i><span class="pcds-help-line__lead">Note:</span><span>Saves as JSON in test_tags_value and restores on edit.</span></p>
+                  </div>
+                </div>
+                <div class="pcds-field pcds-span-12 pcds-span-md-6">
+                  <label for="test_quantity">Generators On Site <span class="pcds-tag pcds-sm pcds-neutral"><i class="fa-solid fa-eye" aria-hidden="true"></i><span>Look only</span></span></label>
+                  <div class="input-group pcds-stepper">
+                    <button type="button" class="pcds-btn pcds-blue pcds-soft pcds-stepper__b" data-step="-10" aria-label="Decrease Generators On Site by 10">&#8722;10</button>
+                    <button type="button" class="pcds-btn pcds-blue pcds-soft pcds-stepper__b" data-step="-1" aria-label="Decrease Generators On Site by 1"><i class="fa-solid fa-minus" aria-hidden="true"></i></button>
+                    <input id="test_quantity" class="form-control" type="number" name="test_quantity" label="Generators On Site" min="0" max="500" step="1" placeholder="0" />
+                    <button type="button" class="pcds-btn pcds-blue pcds-soft pcds-stepper__b" data-step="1" aria-label="Increase Generators On Site by 1"><i class="fa-solid fa-plus" aria-hidden="true"></i></button>
+                    <button type="button" class="pcds-btn pcds-blue pcds-soft pcds-stepper__b" data-step="10" aria-label="Increase Generators On Site by 10">+10</button>
+                  </div>
+                  <div class="form-text pcds-stepper__keys" aria-hidden="true"><span><kbd>&#8593;</kbd><kbd>&#8595;</kbd> by 1</span><span><kbd>Shift</kbd> by 10</span><span><kbd>Home</kbd><kbd>End</kbd> to 0 or 500</span></div>
+                </div>
+              </div>
+              <div class="pcds-grid">
+                <div class="pcds-field pcds-span-12 pcds-span-md-6">
+                  <label for="test_email">Report Email</label>
+                  <div class="pcds-clearable">
+                    <input id="test_email" class="form-control" type="email" name="test_email" label="Report Email" autocomplete="email" placeholder="name@example.org" />
+                  </div>
+                  <div class="form-text pcds-help-stack">
+                    <p class="pcds-help-line" data-kind="example"><i class="fa-solid fa-pen pcds-help-line__ic" aria-hidden="true"></i><span class="pcds-help-line__lead">Example:</span><span>ops.desk@example.org</span></p>
+                  </div>
+                </div>
+                <div class="pcds-field pcds-span-12 pcds-span-md-6">
+                  <label for="test_phone">Callback Phone <span class="pcds-tag pcds-sm pcds-warning pcds-glyph" data-pcds-req="rec"><i class="fa-solid fa-thumbs-up" aria-hidden="true"></i><span>Recommended</span></span> <span class="pcds-tag pcds-sm pcds-glyph pcds-neutral" tabindex="-1" data-toggle="tooltip" data-placement="top" title="Keys: digits only, the mask adds the rest. Backspace steps back over the punctuation."><i class="fa-solid fa-keyboard" aria-hidden="true"></i><span>Keys</span></span></label>
+                  <input id="test_phone" class="form-control" type="tel" inputmode="numeric" name="test_phone" label="Callback Phone" data-pcds-mask="phone" placeholder="(727) 000-0000" />
+                  <div class="form-text pcds-help-stack">
+                    <p class="pcds-help-line" data-kind="format"><i class="fa-solid fa-ruler-horizontal pcds-help-line__ic" aria-hidden="true"></i><span class="pcds-help-line__lead">Format:</span><span>(727) 555-0100. Type 5 digits and leave the field to see the error line.</span></p>
+                  </div>
+                </div>
+              </div>
+              <div class="pcds-grid">
+                <div class="pcds-field pcds-span-12">
+                  <label for="test_notes">Notes <span class="pcds-tag pcds-sm pcds-warning pcds-glyph" data-pcds-req="rec"><i class="fa-solid fa-thumbs-up" aria-hidden="true"></i><span>Recommended</span></span></label>
+                  <textarea id="test_notes" class="form-control" name="test_notes" label="Notes" rows="4" placeholder="What happened, what was checked, what is still open"></textarea>
+                  <div class="form-text pcds-help-stack">
+                    <p class="pcds-help-line" data-kind="why"><i class="fa-solid fa-lock pcds-help-line__ic" aria-hidden="true"></i><span class="pcds-help-line__lead">Why we ask:</span><span>The next shift reads this first.</span></p>
+                    <p class="pcds-help-line pcds-warning" data-kind="warning"><i class="fa-solid fa-triangle-exclamation pcds-help-line__ic" aria-hidden="true"></i><span class="pcds-help-line__lead">Warning:</span><span>Do not paste personal medical details here.</span></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- ================= [ 2. Dates and times ] ================= -->
+          <details class="pcds-section" id="sec-dates" open="open" data-tour-step="2" data-tour-title="Dates and times" data-tour-text="Typed date, time and datetime with the calendar button. Each saves ISO into a hidden column.">
+            <summary class="pcds-section__head">
+              <span class="pcds-section__lead" aria-hidden="true"><i class="fa-solid fa-caret-down"></i></span>
+              <span class="pcds-surface__icon pcds-violet" aria-hidden="true"><i class="fa-solid fa-calendar-days"></i></span>
+              <span class="pcds-section__titles"><h2 class="pcds-section__title">Dates and Times</h2></span>
+              <span class="pcds-section__actions pcds-cluster"><span class="pcds-count pcds-violet" data-pcds-count="3" aria-label="3 fields">3</span></span>
+              <span class="pcds-section__sub">Typed date, time and datetime. Type or pick; the visible box is nameless and a hidden holder carries the column.</span>
+            </summary>
+            <div class="pcds-section__body pcds-grid--form">
+              <div class="pcds-grid">
+                <div class="pcds-field pcds-date-field pcds-span-12 pcds-span-md-4" data-pcds-date="date">
+                  <label for="test_date_txt">Inspection Date</label>
+                  <div class="input-group pcds-date">
+                    <input id="test_date_txt" class="form-control" type="text" inputmode="numeric" autocomplete="off" placeholder="MM/DD/YYYY" aria-describedby="test_date_fmt" />
+                    <button type="button" class="input-group-addon pcds-date__btn" aria-haspopup="dialog" aria-expanded="false" aria-label="Choose a date for Inspection Date"><i class="fa-regular fa-calendar" aria-hidden="true"></i></button>
+                  </div>
+                  <input type="hidden" class="pcds-date__val" id="test_date" name="test_date" label="Inspection Date" />
+                  <p id="test_date_fmt" class="form-text pcds-help-line pcds-help" data-kind="format"><i class="fa-solid fa-ruler-horizontal pcds-help-line__ic" aria-hidden="true"></i><span class="pcds-help-line__lead">Format:</span><span>MM/DD/YYYY</span></p>
+                </div>
+                <div class="pcds-field pcds-date-field pcds-span-12 pcds-span-md-4" data-pcds-date="time" data-minute-step="15">
+                  <label for="test_time_txt">Start Time</label>
+                  <div class="input-group pcds-date">
+                    <input id="test_time_txt" class="form-control" type="text" autocomplete="off" placeholder="h:mm AM" aria-describedby="test_time_fmt" />
+                    <button type="button" class="input-group-addon pcds-date__btn" aria-haspopup="dialog" aria-expanded="false" aria-label="Choose a time for Start Time"><i class="fa-regular fa-clock" aria-hidden="true"></i></button>
+                  </div>
+                  <input type="hidden" class="pcds-date__val" id="test_time" name="test_time" label="Start Time" />
+                  <p id="test_time_fmt" class="form-text pcds-help-line pcds-help" data-kind="format"><i class="fa-solid fa-ruler-horizontal pcds-help-line__ic" aria-hidden="true"></i><span class="pcds-help-line__lead">Format:</span><span>h:mm AM, 15 minute steps</span></p>
+                </div>
+                <div class="pcds-field pcds-date-field pcds-span-12 pcds-span-md-4" data-pcds-date="datetime">
+                  <label for="test_datetime_txt">Next Check Due</label>
+                  <div class="input-group pcds-date">
+                    <input id="test_datetime_txt" class="form-control" type="text" autocomplete="off" placeholder="MM/DD/YYYY h:mm AM" aria-describedby="test_datetime_fmt" />
+                    <button type="button" class="input-group-addon pcds-date__btn" aria-haspopup="dialog" aria-expanded="false" aria-label="Choose a date and time for Next Check Due"><i class="fa-regular fa-calendar-check" aria-hidden="true"></i></button>
+                  </div>
+                  <input type="hidden" class="pcds-date__val" id="test_datetime" name="test_datetime" label="Next Check Due" />
+                  <p id="test_datetime_fmt" class="form-text pcds-help-line pcds-help" data-kind="format"><i class="fa-solid fa-ruler-horizontal pcds-help-line__ic" aria-hidden="true"></i><span class="pcds-help-line__lead">Format:</span><span>MM/DD/YYYY h:mm AM</span></p>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- ================= [ 3. Choices ] ================= -->
+          <details class="pcds-section" id="sec-choices" open="open" data-tour-step="3" data-tour-title="Choices" data-tour-text="Every choice look: list, pills, cards, chips, switches, a single checkbox and the Other box.">
+            <summary class="pcds-section__head">
+              <span class="pcds-section__lead" aria-hidden="true"><i class="fa-solid fa-caret-down"></i></span>
+              <span class="pcds-surface__icon pcds-green" aria-hidden="true"><i class="fa-solid fa-list-check"></i></span>
+              <span class="pcds-section__titles"><h2 class="pcds-section__title">Choices</h2></span>
+              <span class="pcds-section__actions pcds-cluster"><span class="pcds-count pcds-green" data-pcds-count="9" aria-label="9 fields">9</span></span>
+              <span class="pcds-section__sub">Radio list, pills, cards, chips, switches, a single checkbox, and Other on a list and on a select.</span>
+            </summary>
+            <div class="pcds-section__body pcds-grid--form">
+              <div class="pcds-grid">
+                <div class="pcds-field pcds-span-12 pcds-span-md-6">
+                  <div class="pcds-field__label" id="test_priority_l">Priority <span class="pcds-tag pcds-sm pcds-danger pcds-glyph" data-pcds-req="req"><i class="fa-solid fa-asterisk" aria-hidden="true"></i><span>Required</span></span></div>
+                  <div class="pcds-choices" role="radiogroup" aria-labelledby="test_priority_l">
+                    <label class="pcds-choice"><input type="radio" name="test_priority" label="Priority" value="Low" required="required" /><span class="pcds-choice__body"><span>Low</span></span><span class="pcds-choice__mark" aria-hidden="true"></span></label>
+                    <label class="pcds-choice"><input type="radio" name="test_priority" label="Priority" value="Medium" /><span class="pcds-choice__body"><span>Medium</span></span><span class="pcds-choice__mark" aria-hidden="true"></span></label>
+                    <label class="pcds-choice"><input type="radio" name="test_priority" label="Priority" value="High" /><span class="pcds-choice__body"><span>High</span></span><span class="pcds-choice__mark" aria-hidden="true"></span></label>
+                    <label class="pcds-choice"><input type="radio" name="test_priority" label="Priority" value="Critical" /><span class="pcds-choice__body"><span>Critical</span></span><span class="pcds-choice__mark" aria-hidden="true"></span></label>
+                  </div>
+                </div>
+                <div class="pcds-field pcds-span-12 pcds-span-md-6">
+                  <div class="pcds-field__label" id="test_confirmed_l">Confirmed On Scene</div>
+                  <div class="pcds-choices pcds-choices-pill" role="radiogroup" aria-labelledby="test_confirmed_l">
+                    <label class="pcds-choice"><input type="radio" name="test_confirmed" label="Confirmed On Scene" value="Yes" /><span><i class="fa-solid fa-check" aria-hidden="true"></i> Yes</span></label>
+                    <label class="pcds-choice"><input type="radio" name="test_confirmed" label="Confirmed On Scene" value="No" /><span><i class="fa-solid fa-xmark" aria-hidden="true"></i> No</span></label>
+                    <label class="pcds-choice"><input type="radio" name="test_confirmed" label="Confirmed On Scene" value="Unknown" /><span><i class="fa-solid fa-question" aria-hidden="true"></i> Unknown</span></label>
+                  </div>
+                </div>
+              </div>
+              <div class="pcds-grid">
+                <div class="pcds-field pcds-span-12">
+                  <div class="pcds-field__label" id="test_site_type_l">Site Type</div>
+                  <div class="pcds-choices pcds-choices-card" role="radiogroup" aria-labelledby="test_site_type_l">
+                    <label class="pcds-choice"><input type="radio" name="test_site_type" label="Site Type" value="Office" /><span class="pcds-choice__ic" aria-hidden="true"><i class="fa-solid fa-building"></i></span><span class="pcds-choice__body"><span>Office</span><span class="pcds-choice__d">Staffed admin building</span></span><span class="pcds-choice__mark" aria-hidden="true"></span></label>
+                    <label class="pcds-choice"><input type="radio" name="test_site_type" label="Site Type" value="Warehouse" /><span class="pcds-choice__ic" aria-hidden="true"><i class="fa-solid fa-warehouse"></i></span><span class="pcds-choice__body"><span>Warehouse</span><span class="pcds-choice__d">Logistics and staging</span></span><span class="pcds-choice__mark" aria-hidden="true"></span></label>
+                    <label class="pcds-choice"><input type="radio" name="test_site_type" label="Site Type" value="Shelter" /><span class="pcds-choice__ic" aria-hidden="true"><i class="fa-solid fa-house-chimney-user"></i></span><span class="pcds-choice__body"><span>Shelter</span><span class="pcds-choice__d">Public evacuation shelter</span></span><span class="pcds-choice__mark" aria-hidden="true"></span></label>
+                    <label class="pcds-choice"><input type="radio" name="test_site_type" label="Site Type" value="Field Site" /><span class="pcds-choice__ic" aria-hidden="true"><i class="fa-solid fa-tents"></i></span><span class="pcds-choice__body"><span>Field Site</span><span class="pcds-choice__d">Temporary, outdoors</span></span><span class="pcds-choice__mark" aria-hidden="true"></span></label>
+                  </div>
+                </div>
+              </div>
+              <div class="pcds-grid">
+                <div class="pcds-field pcds-span-12 pcds-span-md-6">
+                  <div class="pcds-field__label" id="test_needs_l">Resources Needed</div>
+                  <div class="pcds-choices pcds-choices-chip" role="group" aria-labelledby="test_needs_l">
+                    <label class="pcds-choice"><input type="checkbox" name="test_need_power" label="Needs Power" value="Yes" /><span><i class="fa-solid fa-bolt" aria-hidden="true"></i> Power</span></label>
+                    <label class="pcds-choice"><input type="checkbox" name="test_need_water" label="Needs Water" value="Yes" /><span><i class="fa-solid fa-droplet" aria-hidden="true"></i> Water</span></label>
+                    <label class="pcds-choice"><input type="checkbox" name="test_need_food" label="Needs Food" value="Yes" /><span><i class="fa-solid fa-utensils" aria-hidden="true"></i> Food</span></label>
+                    <label class="pcds-choice"><input type="checkbox" name="test_need_fuel" label="Needs Fuel" value="Yes" /><span><i class="fa-solid fa-gas-pump" aria-hidden="true"></i> Fuel</span></label>
+                  </div>
+                </div>
+                <div class="pcds-field pcds-span-12 pcds-span-md-6">
+                  <div class="pcds-field__label" id="test_alerts_l">Alerting</div>
+                  <div class="pcds-choices pcds-choices-switch pcds-choices-stack" role="group" aria-labelledby="test_alerts_l">
+                    <label class="pcds-switch"><input type="checkbox" name="test_alert_active" label="Alert Active" value="Yes" role="switch" /><span class="pcds-switch__track" aria-hidden="true"></span><span>Alert is active</span><span class="pcds-switch__state" aria-hidden="true"><span>Yes</span><span>No</span></span></label>
+                    <label class="pcds-switch"><input type="checkbox" name="test_alert_notify" label="Notify Duty Officer" value="Yes" role="switch" /><span class="pcds-switch__track" aria-hidden="true"></span><span>Notify the duty officer</span><span class="pcds-switch__state" aria-hidden="true"><span>Yes</span><span>No</span></span></label>
+                  </div>
+                </div>
+              </div>
+              <div class="pcds-grid">
+                <div class="pcds-field pcds-span-12 pcds-span-md-6">
+                  <div class="pcds-field__label" id="test_source_l">Report Source</div>
+                  <div class="pcds-choices-host">
+                    <div class="pcds-choices pcds-choices-stack" role="radiogroup" aria-labelledby="test_source_l">
+                      <label class="pcds-choice"><input type="radio" name="test_source" label="Report Source" value="Phone Call" /><span class="pcds-choice__body"><span>Phone call</span></span><span class="pcds-choice__mark" aria-hidden="true"></span></label>
+                      <label class="pcds-choice"><input type="radio" name="test_source" label="Report Source" value="Field Team" /><span class="pcds-choice__body"><span>Field team</span></span><span class="pcds-choice__mark" aria-hidden="true"></span></label>
+                      <label class="pcds-choice"><input type="radio" name="test_source" label="Report Source" value="Other" /><span class="pcds-choice__body"><span>Other</span></span><span class="pcds-choice__mark" aria-hidden="true"></span></label>
+                    </div>
+                    <span class="pcds-choices__other"><label for="test_source_other">Other, please specify</label><input id="test_source_other" class="form-control" type="text" name="test_source_other" label="Report Source (Other)" placeholder="Please specify" /></span>
+                  </div>
+                  <div class="form-text pcds-help-stack">
+                    <p class="pcds-help-line" data-kind="affects"><i class="fa-solid fa-sitemap pcds-help-line__ic" aria-hidden="true"></i><span class="pcds-help-line__lead">Affects:</span><span>Pick Other and a specify box opens (pure CSS).</span></p>
+                  </div>
+                </div>
+                <div class="pcds-field pcds-span-12 pcds-span-md-6">
+                  <label for="test_status">Status</label>
+                  <div class="pcds-choices-host">
+                    <select id="test_status" name="test_status" label="Status">
+                      <option value="Open">Open</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Closed">Closed</option>
+                      <option value="Other">Other</option>
+                    </select>
+                    <span class="pcds-choices__other"><label for="test_status_other">Other status</label><input id="test_status_other" class="form-control" type="text" name="test_status_other" label="Status (Other)" placeholder="Please specify" /></span>
+                  </div>
+                  <p class="form-text pcds-rule-note"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i><span>Look only: Closed would make Closed By required below.</span></p>
+                </div>
+              </div>
+              <div class="pcds-grid">
+                <div class="pcds-field pcds-span-12 pcds-span-md-6 pcds-rule-pulse">
+                  <label for="test_closed_by">Closed By <span class="pcds-tag pcds-sm pcds-neutral"><i class="fa-solid fa-eye" aria-hidden="true"></i><span>Look only</span></span></label>
+                  <input id="test_closed_by" class="form-control" type="text" name="test_closed_by" label="Closed By" />
+                  <p class="form-text pcds-rule-line"><i class="fa-solid fa-code-branch" aria-hidden="true"></i><span>Shown and required because Status is Closed.</span></p>
+                </div>
+                <div class="pcds-field pcds-span-12 pcds-span-md-6">
+                  <div class="pcds-field__label" id="test_reviewed_l">Supervisor Review</div>
+                  <div class="pcds-choices" role="group" aria-labelledby="test_reviewed_l">
+                    <label class="pcds-choice"><input type="checkbox" name="test_reviewed" label="Supervisor Reviewed" value="Yes" /><span class="pcds-choice__mark" aria-hidden="true"></span><span>A supervisor reviewed this record</span></label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- ================= [ 4. Survey ] ================= -->
+          <details class="pcds-section" id="sec-survey" open="open">
+            <summary class="pcds-section__head">
+              <span class="pcds-section__lead" aria-hidden="true"><i class="fa-solid fa-caret-down"></i></span>
+              <span class="pcds-surface__icon pcds-orange" aria-hidden="true"><i class="fa-solid fa-clipboard-question"></i></span>
+              <span class="pcds-section__titles"><h2 class="pcds-section__title">Site Readiness Survey</h2></span>
+              <span class="pcds-section__actions pcds-cluster"><span class="pcds-count pcds-orange" data-pcds-count="3" aria-label="3 questions">3</span></span>
+              <span class="pcds-section__sub">Survey list. Answer Yes and its follow up field opens (pure CSS).</span>
+            </summary>
+            <div class="pcds-section__body">
+              <ol class="pcds-survey" aria-label="Site Readiness Survey">
+                <li class="pcds-survey__q">
+                  <span class="pcds-survey__n">1.</span>
+                  <p class="pcds-survey__t" id="sq_power">Does the site need backup power?<span class="pcds-tag pcds-sm pcds-glyph pcds-danger" data-pcds-req="req"><i class="fa-solid fa-asterisk" aria-hidden="true"></i><span>Required</span></span></p>
+                  <div class="pcds-survey__a" aria-labelledby="sq_power">
+                    <div class="pcds-choices" role="radiogroup" aria-labelledby="sq_power">
+                      <label class="pcds-choice"><input type="radio" name="survey_power" label="Needs Backup Power" value="No" required="required" /><span class="pcds-choice__body"><span>No</span></span><span class="pcds-choice__mark" aria-hidden="true"></span></label>
+                      <label class="pcds-choice"><input type="radio" name="survey_power" label="Needs Backup Power" value="Yes" /><span class="pcds-choice__body"><span>Yes</span></span><span class="pcds-choice__mark" aria-hidden="true"></span></label>
+                    </div>
+                  </div>
+                  <div class="pcds-survey__sub">
+                    <div class="pcds-field"><label for="survey_power_detail">Which circuits?</label><input id="survey_power_detail" class="form-control" type="text" name="survey_power_detail" label="Backup Power Circuits" placeholder="e.g. Kitchen, cooler, radio room" /></div>
+                  </div>
+                </li>
+                <li class="pcds-survey__q">
+                  <span class="pcds-survey__n">2.</span>
+                  <p class="pcds-survey__t" id="sq_pets">Will animals be on site?</p>
+                  <div class="pcds-survey__a" aria-labelledby="sq_pets">
+                    <div class="pcds-choices" role="radiogroup" aria-labelledby="sq_pets">
+                      <label class="pcds-choice"><input type="radio" name="survey_pets" label="Animals On Site" value="No" /><span class="pcds-choice__body"><span>No</span></span><span class="pcds-choice__mark" aria-hidden="true"></span></label>
+                      <label class="pcds-choice"><input type="radio" name="survey_pets" label="Animals On Site" value="Yes" /><span class="pcds-choice__body"><span>Yes</span></span><span class="pcds-choice__mark" aria-hidden="true"></span></label>
+                    </div>
+                  </div>
+                  <div class="pcds-survey__sub">
+                    <div class="pcds-field"><label for="survey_pets_detail">How many, and what kind?</label><input id="survey_pets_detail" class="form-control" type="text" name="survey_pets_detail" label="Animals Detail" /></div>
+                  </div>
+                </li>
+                <li class="pcds-survey__q">
+                  <span class="pcds-survey__n">3.</span>
+                  <p class="pcds-survey__t" id="sq_access">Is the site wheelchair accessible? <span class="pcds-term" tabindex="0" data-toggle="tooltip" data-placement="top" title="Accessible: a step-free entrance, a ramp or lift, and an accessible restroom.">Accessible</span></p>
+                  <div class="pcds-survey__a" aria-labelledby="sq_access">
+                    <div class="pcds-choices" role="radiogroup" aria-labelledby="sq_access">
+                      <label class="pcds-choice"><input type="radio" name="survey_access" label="Wheelchair Accessible" value="No" /><span class="pcds-choice__body"><span>No</span></span><span class="pcds-choice__mark" aria-hidden="true"></span></label>
+                      <label class="pcds-choice"><input type="radio" name="survey_access" label="Wheelchair Accessible" value="Yes" /><span class="pcds-choice__body"><span>Yes</span></span><span class="pcds-choice__mark" aria-hidden="true"></span></label>
+                      <label class="pcds-choice"><input type="radio" name="survey_access" label="Wheelchair Accessible" value="Partial" /><span class="pcds-choice__body"><span>Partial</span></span><span class="pcds-choice__mark" aria-hidden="true"></span></label>
+                    </div>
+                  </div>
+                </li>
+              </ol>
+            </div>
+          </details>
+
+          <!-- ================= [ 5. Location ] ================= -->
+          <details class="pcds-section" id="sec-location" open="open" data-tour-step="4" data-tour-title="Location" data-tour-text="The geocode field. Pick an address and the hero, the chips and the read-only fields fill themselves.">
+            <summary class="pcds-section__head">
+              <span class="pcds-section__lead" aria-hidden="true"><i class="fa-solid fa-caret-down"></i></span>
+              <span class="pcds-surface__icon pcds-red" aria-hidden="true"><i class="fa-solid fa-location-dot"></i></span>
+              <span class="pcds-section__titles"><h2 class="pcds-section__title">Location</h2></span>
+              <span class="pcds-section__actions pcds-cluster"><span class="pcds-count pcds-red" data-pcds-count="10" aria-label="10 fields">10</span></span>
+              <span class="pcds-section__sub">Geocode add-on: Google Places search, the location hero, county zone chips and auto-filled columns.</span>
+            </summary>
+            <div class="pcds-section__body pcds-grid--form">
+              <div class="pcds-grid">
+                <div class="pcds-field pcds-span-12">
+                  <label for="address">Site Address</label>
+                  <div class="pcds-geo" id="loc-geo">
+                    <div class="input-group">
+                      <input id="address" class="form-control" type="text" name="address" label="Site Address" autocomplete="off" data-addr="search" data-addr-group="loc" data-addr-format="[street], [city], [state] [zip]" placeholder="Start typing an address" />
+                      <button type="button" class="input-group-addon pcds-geo__map"><i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i><span>Map Address</span></button>
+                    </div>
+                    <div class="pcds-geo__head">
+                      <button type="button" class="pcds-geo__pin" aria-label="View on the map"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span class="pcds-geo__go"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></span></button>
+                      <span class="pcds-geo__line"></span>
+                      <span class="pcds-geo__coords"></span>
+                      <button type="button" class="pcds-btn pcds-sm pcds-ghost pcds-amber-dark pcds-press-soft" aria-pressed="false"><i class="fa-solid fa-lock" aria-hidden="true"></i><span>Locked</span></button>
+                    </div>
+                    <div class="pcds-geo__chips">
+                      <span class="pcds-geo__chip"><span class="pcds-geo__ic"><i class="fa-solid fa-water" aria-hidden="true"></i></span><span class="pcds-geo__k">Evac Zone</span><span class="pcds-geo__v" data-addr="evac_zone" data-addr-group="loc"></span></span>
+                      <span class="pcds-geo__chip"><span class="pcds-geo__ic"><i class="fa-solid fa-fire" aria-hidden="true"></i></span><span class="pcds-geo__k">Fire District</span><span class="pcds-geo__v" data-addr="fire_district" data-addr-group="loc"></span></span>
+                      <span class="pcds-geo__chip"><span class="pcds-geo__ic"><i class="fa-solid fa-truck-medical" aria-hidden="true"></i></span><span class="pcds-geo__k">EMS Grid</span><span class="pcds-geo__v" data-addr="ems_grid" data-addr-group="loc"></span></span>
+                      <span class="pcds-geo__chip"><span class="pcds-geo__ic"><i class="fa-solid fa-city" aria-hidden="true"></i></span><span class="pcds-geo__k">Municipality</span><span class="pcds-geo__v" data-addr="municipality" data-addr-group="loc"></span></span>
+                      <span class="pcds-geo__chip"><span class="pcds-geo__ic"><i class="fa-solid fa-house-flood-water" aria-hidden="true"></i></span><span class="pcds-geo__k">Flood Zone</span><span class="pcds-geo__v" data-addr="flood_zone" data-addr-group="loc"></span></span>
+                      <button type="button" class="pcds-geo__more">+ more</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="pcds-grid">
+                <div class="pcds-field pcds-span-12 pcds-span-md-4">
+                  <label for="city">City <span class="pcds-src-auto" data-pcds-src-from="Site Address" data-pcds-src-meaning="Filled in from the Site Address by Google Places."></span></label>
+                  <input id="city" class="form-control" type="text" name="city" label="City" readonly="readonly" data-addr="city" data-addr-group="loc" />
+                </div>
+                <div class="pcds-field pcds-span-6 pcds-span-md-4">
+                  <label for="state">State <span class="pcds-src-auto" data-pcds-src-from="Site Address"></span></label>
+                  <input id="state" class="form-control" type="text" name="state" label="State" readonly="readonly" data-addr="state" data-addr-group="loc" />
+                </div>
+                <div class="pcds-field pcds-span-6 pcds-span-md-4">
+                  <label for="zip">ZIP <span class="pcds-src-auto" data-pcds-src-from="Site Address"></span></label>
+                  <input id="zip" class="form-control" type="text" name="zip" label="ZIP" readonly="readonly" data-addr="zip" data-addr-group="loc" />
+                </div>
+              </div>
+              <div class="pcds-grid">
+                <div class="pcds-field pcds-span-6 pcds-span-md-3">
+                  <label for="latitude">Latitude</label>
+                  <input id="latitude" class="form-control" type="text" name="latitude" label="Latitude" readonly="readonly" data-addr="latitude" data-addr-group="loc" />
+                </div>
+                <div class="pcds-field pcds-span-6 pcds-span-md-3">
+                  <label for="longitude">Longitude</label>
+                  <input id="longitude" class="form-control" type="text" name="longitude" label="Longitude" readonly="readonly" data-addr="longitude" data-addr-group="loc" />
+                </div>
+                <div class="pcds-field pcds-span-6 pcds-span-md-3">
+                  <label for="evac_zone">Evac Zone <span class="pcds-src-auto" data-pcds-src-from="Pinellas County evacuation zones"></span></label>
+                  <input id="evac_zone" class="form-control" type="text" name="evac_zone" label="Evac Zone" readonly="readonly" data-addr="evac_zone" data-addr-group="loc" />
+                </div>
+                <div class="pcds-field pcds-span-6 pcds-span-md-3">
+                  <label for="fire_district">Fire District <span class="pcds-src-auto" data-pcds-src-from="Pinellas County fire districts"></span></label>
+                  <input id="fire_district" class="form-control" type="text" name="fire_district" label="Fire District" readonly="readonly" data-addr="fire_district" data-addr-group="loc" />
+                </div>
+              </div>
+              <div class="pcds-grid">
+                <div class="pcds-field pcds-span-12">
+                  <div class="form-text pcds-help-stack">
+                    <p class="pcds-help-line pcds-blue" data-kind="auto"><i class="fa-solid fa-wand-magic-sparkles pcds-help-line__ic" aria-hidden="true"></i><span class="pcds-help-line__lead">Filled automatically:</span><span>Everything below the address fills from Google Places and the county map layers.</span></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- ================= [ 6. Access: restricted and locked ] ================= -->
+          <details class="pcds-section" id="sec-access" open="open">
+            <summary class="pcds-section__head">
+              <span class="pcds-section__lead" aria-hidden="true"><i class="fa-solid fa-caret-down"></i></span>
+              <span class="pcds-surface__icon pcds-amber" aria-hidden="true"><i class="fa-solid fa-lock"></i></span>
+              <span class="pcds-section__titles"><h2 class="pcds-section__title">Site Access</h2></span>
+              <span class="pcds-section__actions pcds-cluster"><span class="pcds-tag pcds-sm pcds-neutral"><i class="fa-solid fa-eye" aria-hidden="true"></i><span>Look only</span></span></span>
+              <span class="pcds-section__sub">Restricted (masked) value, a locked value, and a read-only value. Show and Unlock have no core JS yet.</span>
+            </summary>
+            <div class="pcds-section__body pcds-grid--form">
+              <div class="pcds-grid">
+                <div class="pcds-field pcds-span-12 pcds-span-md-4 pcds-restrict is-restricted">
+                  <div class="pcds-field__label"><label for="gate_code">Gate Code</label></div>
+                  <div class="pcds-restrict__row">
+                    <span class="pcds-restrict__slot"><span class="pcds-restrict__mask" aria-hidden="true">&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;</span><span class="pcds-restrict__ctl"><input id="gate_code" class="form-control" type="text" name="gate_code" label="Gate Code" /></span></span>
+                    <button type="button" class="pcds-btn pcds-sm pcds-ghost pcds-amber-dark pcds-press-soft pcds-sm-icon" aria-pressed="false" aria-label="Show Gate Code"><i class="fa-solid fa-eye pcds-off-only" aria-hidden="true"></i><i class="fa-solid fa-eye-slash pcds-on-only" aria-hidden="true"></i><span>Show</span></button>
+                  </div>
+                  <div class="form-text pcds-help-stack">
+                    <p class="pcds-help-line" data-kind="restricted"><i class="fa-solid fa-shield-halved pcds-help-line__ic" aria-hidden="true"></i><span class="pcds-help-line__lead">Restricted:</span><span>Hidden on screen until shown.</span></p>
+                  </div>
+                </div>
+                <div class="pcds-field pcds-span-12 pcds-span-md-4 pcds-restrict is-locked">
+                  <div class="pcds-field__label"><label for="site_manager">Site Manager</label><button type="button" class="pcds-tag pcds-sm pcds-quiet pcds-glyph pcds-amber-dark pcds-press-soft" aria-pressed="false" aria-label="Unlock Site Manager" data-toggle="tooltip" data-placement="top" title="Locked. Read-only until unlocked."><i class="fa-solid fa-lock pcds-off-only" aria-hidden="true"></i><i class="fa-solid fa-lock-open pcds-on-only" aria-hidden="true"></i><span>Locked</span></button></div>
+                  <div class="pcds-restrict__row">
+                    <span class="pcds-restrict__slot"><span class="pcds-restrict__text">
+                      <choose>
+                        <when test="/data/*[starts-with(name(), 'table_')]/@site_manager != ''">
+                          <value-of select="/data/*[starts-with(name(), 'table_')]/@site_manager" />
+                        </when>
+                        <otherwise>
+                          <span class="pcds-unset"></span>
+                        </otherwise>
+                      </choose>
+                    </span><span class="pcds-restrict__ctl"><input id="site_manager" class="form-control" type="text" name="site_manager" label="Site Manager" /></span></span>
+                    <button type="button" class="pcds-btn pcds-sm pcds-ghost pcds-amber-dark pcds-press-soft pcds-sm-icon" aria-pressed="false" aria-label="Unlock Site Manager"><i class="fa-solid fa-lock-open pcds-off-only" aria-hidden="true"></i><i class="fa-solid fa-lock pcds-on-only" aria-hidden="true"></i><span>Unlock</span></button>
+                  </div>
+                </div>
+                <div class="pcds-field pcds-span-12 pcds-span-md-4">
+                  <label for="parcel_id">Parcel ID <span class="pcds-src-auto" data-pcds-src-from="Pinellas County parcels" data-pcds-src-meaning="Joined from the parcel layer at the geocoded point."></span></label>
+                  <input id="parcel_id" class="form-control" type="text" name="parcel_id" label="Parcel ID" readonly="readonly" data-addr="parcel_id" data-addr-group="loc" />
+                  <div class="form-text pcds-help-stack">
+                    <p class="pcds-help-line" data-kind="from"><i class="fa-solid fa-clock-rotate-left pcds-help-line__ic" aria-hidden="true"></i><span class="pcds-help-line__lead">Saved:</span><span>Read-only; fills from the Site Address.</span></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- ================= [ 7. People ] ================= -->
+          <details class="pcds-section" id="sec-people" open="open" data-tour-step="5" data-tour-title="People" data-tour-text="The contact card, link rows and the empty row.">
+            <summary class="pcds-section__head">
+              <span class="pcds-section__lead" aria-hidden="true"><i class="fa-solid fa-caret-down"></i></span>
+              <span class="pcds-surface__icon pcds-teal" aria-hidden="true"><i class="fa-solid fa-address-book"></i></span>
+              <span class="pcds-section__titles"><h2 class="pcds-section__title">People and Partners</h2></span>
+              <span class="pcds-section__actions pcds-cluster"><span class="pcds-count pcds-teal" data-pcds-count="4" aria-label="4 fields">4</span></span>
+              <span class="pcds-section__sub">Contact card (actions are Look only), link rows, and an empty row with its Add button.</span>
+            </summary>
+            <div class="pcds-section__body">
+              <div class="pcds-contacts">
+                <section class="pcds-card pcds-contact" aria-labelledby="poc_t">
+                  <div class="pcds-card__head">
+                    <span class="pcds-contact__av is-empty" aria-hidden="true"><i class="fa-solid fa-user-shield"></i></span>
+                    <span class="pcds-surface__titles">
+                      <span class="pcds-card__title" id="poc_t">
+                        <if test="not(/data/*[starts-with(name(), 'table_')]/@contact_name != '')">
+                          <attribute name="class">pcds-card__title is-empty</attribute>
+                        </if>
+                        <choose>
+                          <when test="/data/*[starts-with(name(), 'table_')]/@contact_name != ''">
+                            <value-of select="/data/*[starts-with(name(), 'table_')]/@contact_name" />
+                          </when>
+                          <otherwise>No one yet</otherwise>
+                        </choose>
+                      </span>
+                      <span class="pcds-card__subtitle">Site Point of Contact <span class="pcds-tag pcds-sm pcds-warning pcds-glyph" data-pcds-req="rec"><i class="fa-solid fa-thumbs-up" aria-hidden="true"></i><span>Recommended</span></span> <button type="button" class="pcds-contact__info" aria-label="The person who unlocks the site and signs for deliveries." data-toggle="tooltip" data-placement="top" title="The person who unlocks the site and signs for deliveries."><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button></span>
+                    </span>
+                    <span class="pcds-contact__acts">
+                      <button type="button" class="pcds-btn pcds-sm pcds-blue pcds-contact__me"><i class="fa-solid fa-id-card" aria-hidden="true"></i><span>My Info</span></button>
+                      <span class="dropdown">
+                        <button type="button" class="pcds-btn pcds-sm pcds-ghost pcds-trigger-kebab" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="More for Site Point of Contact"><i class="fa-solid fa-ellipsis" aria-hidden="true"></i><span>More</span></button>
+                        <div class="dropdown-menu dropdown-menu-right pcds-menu">
+                          <div class="pcds-menu__head">Copy from</div>
+                          <a class="pcds-menu-item" href="#"><span class="pcds-contact__av" aria-hidden="true">TW</span><span class="pcds-menu-item__text"><span class="pcds-menu-item__label">After-Hours Contact</span><span class="pcds-menu-item__desc">Tobias Wren</span></span><span class="pcds-menu-item__meta">3 fields</span></a>
+                          <div class="pcds-menu-divider"></div>
+                          <a class="pcds-menu-item is-danger" href="#"><i class="fa-solid fa-eraser pcds-menu-item__icon" aria-hidden="true"></i><span class="pcds-menu-item__text">Clear this contact</span></a>
+                        </div>
+                      </span>
+                    </span>
+                  </div>
+                  <div class="pcds-grid--form">
+                    <div class="pcds-grid">
+                      <div class="pcds-field pcds-span-12 pcds-span-md-6">
+                        <label for="contact_name">Name</label>
+                        <input id="contact_name" class="form-control" type="text" name="contact_name" label="Contact Name" autocomplete="name" />
+                      </div>
+                      <div class="pcds-field pcds-span-12 pcds-span-md-6">
+                        <label for="contact_title">Title</label>
+                        <input id="contact_title" class="form-control" type="text" name="contact_title" label="Contact Title" autocomplete="organization-title" />
+                      </div>
+                    </div>
+                    <div class="pcds-grid">
+                      <div class="pcds-field pcds-span-12 pcds-span-md-6">
+                        <label for="contact_phone">Phone</label>
+                        <input id="contact_phone" class="form-control" type="tel" inputmode="numeric" name="contact_phone" label="Contact Phone" data-pcds-mask="phone" placeholder="(727) 000-0000" />
+                      </div>
+                      <div class="pcds-field pcds-span-12 pcds-span-md-6">
+                        <label for="contact_email">Email</label>
+                        <input id="contact_email" class="form-control" type="email" name="contact_email" label="Contact Email" autocomplete="email" />
+                      </div>
+                    </div>
+                  </div>
+                  <p class="pcds-contact__hint"><i class="fa-solid fa-circle-info" aria-hidden="true"></i>The person who unlocks the site and signs for deliveries.</p>
+                </section>
+              </div>
+
+              <section class="pcds-section" data-pcds-section="group">
+                <div class="pcds-section__head">
+                  <span class="pcds-section__titles"><h3 class="pcds-section__title">Partner Organizations</h3></span>
+                  <span class="pcds-section__actions pcds-cluster"><button type="button" class="pcds-toolbar-new pcds-sm"><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Link an organization</span></button></span>
+                </div>
+                <div class="pcds-section__body">
+                  <ul class="pcds-linkrows">
+                    <li class="pcds-linkrow"><span class="pcds-linkrow__ic"><i class="fa-solid fa-building-user" aria-hidden="true"></i></span><span class="pcds-linkrow__main"><span class="pcds-linkrow__t">Harborline Property Management</span><span class="pcds-linkrow__sub">Management Company &#183; Current</span></span><span class="pcds-linkrow__acts"><button type="button" class="pcds-btn pcds-sm pcds-icon pcds-ghost pcds-red" aria-label="Remove Harborline Property Management" data-toggle="tooltip" data-placement="top" title="Remove"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button></span></li>
+                    <li class="pcds-linkrow"><span class="pcds-linkrow__ic"><i class="fa-solid fa-hand-holding-heart" aria-hidden="true"></i></span><span class="pcds-linkrow__main"><span class="pcds-linkrow__t">Gulf Coast Volunteer Network</span><span class="pcds-linkrow__sub">Volunteer Partner &#183; Since 2024</span></span><span class="pcds-linkrow__acts"><button type="button" class="pcds-btn pcds-sm pcds-icon pcds-ghost pcds-red" aria-label="Remove Gulf Coast Volunteer Network" data-toggle="tooltip" data-placement="top" title="Remove"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button></span></li>
+                  </ul>
+                </div>
+              </section>
+
+              <section class="pcds-section" data-pcds-section="group">
+                <div class="pcds-section__head">
+                  <span class="pcds-section__titles"><h3 class="pcds-section__title">Backup Contacts</h3></span>
+                  <span class="pcds-section__actions pcds-cluster"><span class="pcds-count" aria-label="0 backup contacts">0</span></span>
+                </div>
+                <div class="pcds-section__body">
+                  <div class="pcds-empty-row">
+                    <div class="pcds-empty-row__in">
+                      <span class="pcds-empty-row__icon" aria-hidden="true"><i class="fa-solid fa-user-plus"></i></span>
+                      <div class="pcds-empty-row__txt">
+                        <div class="pcds-empty-row__title">No backup contacts yet</div>
+                        <div class="pcds-empty-row__msg">Add someone who can open the site if the primary contact cannot.</div>
+                      </div>
+                      <button type="button" class="pcds-toolbar-new pcds-sm"><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add contact</span></button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </details>
+
+          <!-- ================= [ 8. Sign-off ] ================= -->
+          <details class="pcds-section" id="sec-ack" open="open">
+            <summary class="pcds-section__head">
+              <span class="pcds-section__lead" aria-hidden="true"><i class="fa-solid fa-caret-down"></i></span>
+              <span class="pcds-surface__icon pcds-violet" aria-hidden="true"><i class="fa-solid fa-file-signature"></i></span>
+              <span class="pcds-section__titles"><h2 class="pcds-section__title">Sign-off</h2></span>
+              <span class="pcds-section__actions pcds-cluster"><span class="pcds-count pcds-violet" data-pcds-count="1" aria-label="1 field">1</span></span>
+              <span class="pcds-section__sub">Statement card (acknowledgement). The checkbox saves; the who and when stamp is Look only.</span>
+            </summary>
+            <div class="pcds-section__body">
+              <div class="pcds-ack" role="group" aria-labelledby="ack_h">
+                <p class="pcds-ack__head" id="ack_h"><i class="fa-solid fa-file-signature pcds-ack__ic" aria-hidden="true"></i>Accuracy Statement <span class="pcds-tag pcds-sm pcds-glyph pcds-violet" tabindex="0" data-toggle="tooltip" data-placement="top" title="Acknowledge: read this and confirm it"><i class="fa-solid fa-file-signature" aria-hidden="true"></i><span>Acknowledge</span></span></p>
+                <p class="pcds-ack__stmt">I confirm the information in this test record is accurate to the best of my knowledge, and that I checked the site in person or with the site contact.</p>
+                <div class="pcds-ack__ctl">
+                  <div class="pcds-choices">
+                    <label class="pcds-choice"><input type="checkbox" name="test_ack" label="Accuracy Acknowledged" value="Yes" /><span class="pcds-choice__mark" aria-hidden="true"></span><span>I acknowledge this statement</span></label>
+                  </div>
+                </div>
+                <p class="pcds-ack__err" role="alert">Acknowledge this statement to save.</p>
+                <p class="pcds-ack__stamp" role="status"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span>Acknowledged by <strong>Jordan Reyes</strong> (Logistics Section Chief), 10/07/2026 9:12 PM</span><button type="button" class="pcds-ack__undo">Undo</button></p>
+              </div>
+            </div>
+          </details>
+
+          <!-- ================= [ 9. Files ] ================= -->
+          <details class="pcds-section" id="sec-files" open="open">
+            <summary class="pcds-section__head">
+              <span class="pcds-section__lead" aria-hidden="true"><i class="fa-solid fa-caret-down"></i></span>
+              <span class="pcds-surface__icon pcds-cyan" aria-hidden="true"><i class="fa-solid fa-paperclip"></i></span>
+              <span class="pcds-section__titles"><h2 class="pcds-section__title">Attachments</h2></span>
+              <span class="pcds-section__actions pcds-cluster"><span class="pcds-count pcds-cyan" data-pcds-count="1" aria-label="1 field">1</span></span>
+              <span class="pcds-section__sub">WebEOC multiple file input. The core rings the whole drop area on focus.</span>
+            </summary>
+            <div class="pcds-section__body pcds-grid--form">
+              <div class="pcds-grid">
+                <div class="pcds-field pcds-span-12">
+                  <label for="test_attachments">Photos and Documents</label>
+                  <multiplefileinput id="test_attachments" name="test_attachments" label="Photos and Documents" />
+                  <div class="form-text pcds-help-stack">
+                    <p class="pcds-help-line" data-kind="range"><i class="fa-solid fa-arrows-left-right-to-line pcds-help-line__ic" aria-hidden="true"></i><span class="pcds-help-line__lead">Range:</span><span>Any number of files; photos, PDFs and spreadsheets.</span></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- ================= [ 10. Marks: buttons, tags, chips, sources ] ================= -->
+          <details class="pcds-section" id="sec-marks" open="open" data-tour-step="6" data-tour-title="Marks" data-tour-text="Buttons, action aliases, tags, chips, source tags, stamps and counts. None of these save anything.">
+            <summary class="pcds-section__head">
+              <span class="pcds-section__lead" aria-hidden="true"><i class="fa-solid fa-caret-down"></i></span>
+              <span class="pcds-surface__icon pcds-indigo" aria-hidden="true"><i class="fa-solid fa-shapes"></i></span>
+              <span class="pcds-section__titles"><h2 class="pcds-section__title">Buttons and Marks</h2></span>
+              <span class="pcds-section__actions pcds-cluster"><span class="pcds-tag pcds-sm pcds-neutral"><i class="fa-solid fa-ban" aria-hidden="true"></i><span>Saves nothing</span></span></span>
+              <span class="pcds-section__sub">Display only: action aliases, fills, sizes, toggles, tags, badges, chips, source tags, stamps, counts and formats.</span>
+            </summary>
+            <div class="pcds-section__body">
+
+              <section class="pcds-section" data-pcds-section="group">
+                <div class="pcds-section__head"><span class="pcds-section__titles"><h3 class="pcds-section__title">Action aliases</h3></span></div>
+                <div class="pcds-section__body">
+                  <div class="pcds-cluster" data-pcds-labels="keep">
+                    <button type="button" class="pcds-save">Save</button>
+                    <button type="button" class="pcds-cancel">Cancel</button>
+                    <button type="button" class="pcds-delete">Delete</button>
+                    <button type="button" class="pcds-back">Back</button>
+                    <button type="button" class="pcds-next">Next</button>
+                    <button type="button" class="pcds-add">Add</button>
+                    <button type="button" class="pcds-apply">Apply</button>
+                    <button type="button" class="pcds-reset">Reset</button>
+                    <button type="button" class="pcds-dismiss">Dismiss</button>
+                    <button type="button" class="pcds-done">Done</button>
+                  </div>
+                </div>
+              </section>
+
+              <section class="pcds-section" data-pcds-section="group">
+                <div class="pcds-section__head"><span class="pcds-section__titles"><h3 class="pcds-section__title">Fills, tones, sizes and toggles</h3></span></div>
+                <div class="pcds-section__body">
+                  <div class="pcds-cluster" data-pcds-labels="keep">
+                    <button type="button" class="pcds-btn pcds-solid pcds-blue"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>Solid</span></button>
+                    <button type="button" class="pcds-btn pcds-soft pcds-green"><i class="fa-solid fa-seedling" aria-hidden="true"></i><span>Soft</span></button>
+                    <button type="button" class="pcds-btn pcds-outline pcds-violet"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span>Outline</span></button>
+                    <button type="button" class="pcds-btn pcds-ghost pcds-orange"><i class="fa-solid fa-ghost" aria-hidden="true"></i><span>Ghost</span></button>
+                    <button type="button" class="pcds-btn pcds-dashed pcds-teal"><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Dashed</span></button>
+                    <button type="button" class="pcds-btn pcds-solid pcds-danger"><i class="fa-solid fa-radiation" aria-hidden="true"></i><span>Danger</span></button>
+                  </div>
+                  <div class="pcds-cluster mt-2" data-pcds-labels="keep">
+                    <button type="button" class="pcds-btn pcds-xs pcds-soft pcds-blue"><span>XS</span></button>
+                    <button type="button" class="pcds-btn pcds-sm pcds-soft pcds-blue"><span>SM</span></button>
+                    <button type="button" class="pcds-btn pcds-soft pcds-blue"><span>MD</span></button>
+                    <button type="button" class="pcds-btn pcds-lg pcds-soft pcds-blue"><span>LG</span></button>
+                    <button type="button" class="pcds-btn pcds-xl pcds-soft pcds-blue"><span>XL</span></button>
+                    <button type="button" class="pcds-btn pcds-soft pcds-blue pcds-pill"><i class="fa-solid fa-capsules" aria-hidden="true"></i><span>Pill</span></button>
+                    <button type="button" class="pcds-btn pcds-icon pcds-soft pcds-red" aria-label="Flag" data-toggle="tooltip" data-placement="top" title="Flag this record"><i class="fa-solid fa-flag" aria-hidden="true"></i></button>
+                    <button type="button" class="pcds-btn pcds-icon pcds-soft pcds-amber" aria-label="Star" data-toggle="tooltip" data-placement="top" title="Star this record"><i class="fa-solid fa-star" aria-hidden="true"></i></button>
+                    <button type="button" class="pcds-btn pcds-sm pcds-soft pcds-grey pcds-i-arrow-rotate-left"><span>Undo (glyph modifier)</span></button>
+                  </div>
+                  <div class="pcds-cluster mt-2" data-pcds-labels="keep">
+                    <button type="button" class="pcds-btn pcds-sm pcds-toggle pcds-blue" aria-pressed="false"><i class="fa-solid fa-bell" aria-hidden="true"></i><span>Toggle me</span></button>
+                    <button type="button" class="pcds-btn pcds-sm pcds-ghost pcds-amber-dark pcds-press-soft" aria-pressed="true"><i class="fa-solid fa-thumbtack" aria-hidden="true"></i><span>Pressed</span></button>
+                    <span class="pcds-segmented" role="group" aria-label="View size" data-pcds-pick="one">
+                      <button type="button" class="pcds-btn pcds-sm" aria-pressed="true"><i class="fa-solid fa-list" aria-hidden="true"></i><span>List</span></button>
+                      <button type="button" class="pcds-btn pcds-sm" aria-pressed="false"><i class="fa-solid fa-table-cells-large" aria-hidden="true"></i><span>Cards</span></button>
+                      <button type="button" class="pcds-btn pcds-sm" aria-pressed="false"><i class="fa-solid fa-map" aria-hidden="true"></i><span>Map</span></button>
+                    </span>
+                  </div>
+                </div>
+              </section>
+
+              <section class="pcds-section" data-pcds-section="group">
+                <div class="pcds-section__head"><span class="pcds-section__titles"><h3 class="pcds-section__title">Tags, badges, chips and counts</h3></span></div>
+                <div class="pcds-section__body">
+                  <div class="pcds-cluster">
+                    <span class="pcds-tag pcds-blue"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>Info</span></span>
+                    <span class="pcds-tag pcds-green"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span>Ready</span></span>
+                    <span class="pcds-tag pcds-amber"><i class="fa-solid fa-hourglass-half" aria-hidden="true"></i><span>Pending</span></span>
+                    <span class="pcds-tag pcds-red"><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i><span>Blocked</span></span>
+                    <span class="pcds-tag pcds-violet pcds-sm"><i class="fa-solid fa-star" aria-hidden="true"></i><span>Small</span></span>
+                    <span class="pcds-tag pcds-tag-empty">Generated on save</span>
+                    <span class="pcds-badge pcds-teal">New</span>
+                    <span class="pcds-badge pcds-orange">Beta</span>
+                  </div>
+                  <div class="pcds-cluster mt-2">
+                    <span class="pcds-chip pcds-chip-dismiss">10/04/2026<button type="button" class="pcds-chip__x" aria-label="Remove 10/04/2026"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></span>
+                    <span class="pcds-chip pcds-chip-dismiss">10/11/2026<button type="button" class="pcds-chip__x" aria-label="Remove 10/11/2026"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></span>
+                    <button type="button" class="pcds-chip pcds-chip-choice" aria-pressed="true"><span>Choice chip on</span></button>
+                    <button type="button" class="pcds-chip pcds-chip-choice" aria-pressed="false"><span>Choice chip off</span></button>
+                    <span class="pcds-count pcds-blue" data-pcds-count="7">7</span>
+                    <span class="pcds-count pcds-green" data-pcds-count="128">128</span>
+                    <span class="pcds-count pcds-red" data-pcds-count="3">3</span>
+                  </div>
+                  <div class="form-text pcds-help-stack mt-1">
+                    <p class="pcds-help-line" data-kind="note"><i class="fa-solid fa-note-sticky pcds-help-line__ic" aria-hidden="true"></i><span class="pcds-help-line__lead">Try it:</span><span>the chip x removes its chip; the choice chips toggle.</span></p>
+                  </div>
+                </div>
+              </section>
+
+              <section class="pcds-section" data-pcds-section="group">
+                <div class="pcds-section__head"><span class="pcds-section__titles"><h3 class="pcds-section__title">Source tags, stamps and formats</h3></span></div>
+                <div class="pcds-section__body">
+                  <div class="pcds-cluster">
+                    <span>Auto <span class="pcds-src-auto" data-pcds-src-from="Site Address" data-pcds-src-meaning="Filled in from the Site Address." data-pcds-src-at="2026-10-12T14:12:00"></span></span>
+                    <span>Edited <span class="pcds-src-edited" data-pcds-src-from="Site Address" data-pcds-src-who="Pat Kim" data-pcds-src-value="Zone B" data-pcds-src-at="2026-10-12T15:40:00"></span></span>
+                    <span>Conflict <span class="pcds-conflict" data-pcds-src-from="County layer" data-pcds-src-value="Zone A" data-pcds-src-hint="The county layer and the saved value disagree."></span></span>
+                    <span class="pcds-src-auto pcds-tag pcds-sm" data-pcds-src="chip" data-pcds-src-from="Site Address"></span>
+                  </div>
+                  <div class="pcds-cluster mt-2">
+                    <span class="pcds-stamp" data-pcds-stamp="relative"><time datetime="2026-10-13T08:00:00">Oct 13, 2026 8:00 AM</time></span>
+                    <span class="pcds-stamp" data-pcds-stamp="exact"><time datetime="2026-10-01T16:45:00">Oct 1, 2026 4:45 PM</time></span>
+                    <span class="pcds-stamp" data-pcds-stamp="relative" data-pcds-stale="60"><time datetime="2026-09-30T06:00:00">Sep 30, 2026 6:00 AM</time></span>
+                    <span data-pcds-format="money" data-value="18450.5">18450.5</span>
+                    <span data-pcds-format="num" data-value="1234567">1234567</span>
+                    <span data-pcds-format="plural:generator:generators" data-value="3">3</span>
+                  </div>
+                  <div class="pcds-grid--form mt-2">
+                    <div class="pcds-grid">
+                      <div class="pcds-field pcds-span-12 pcds-span-md-6 pcds-ack-done" data-pcds-ack-by="J. Rivera" data-pcds-ack-at="2026-10-05T09:30:00">
+                        <div class="pcds-field__label" data-pcds-title="true">Evacuation plan reviewed (ack chip)</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </details>
+
+          <!-- ================= [ 11. Status and feedback ] ================= -->
+          <details class="pcds-section" id="sec-status" open="open">
+            <summary class="pcds-section__head">
+              <span class="pcds-section__lead" aria-hidden="true"><i class="fa-solid fa-caret-down"></i></span>
+              <span class="pcds-surface__icon pcds-cyan" aria-hidden="true"><i class="fa-solid fa-signal"></i></span>
+              <span class="pcds-section__titles"><h2 class="pcds-section__title">Status and Feedback</h2></span>
+              <span class="pcds-section__actions pcds-cluster"><span class="pcds-tag pcds-sm pcds-neutral"><i class="fa-solid fa-ban" aria-hidden="true"></i><span>Saves nothing</span></span></span>
+              <span class="pcds-section__sub">Alerts, meters, tallies, the save line, the facts strip, the auto-filled block, tabs and dialogs.</span>
+            </summary>
+            <div class="pcds-section__body">
+
+              <section class="pcds-section" data-pcds-section="group">
+                <div class="pcds-section__head"><span class="pcds-section__titles"><h3 class="pcds-section__title">Alerts</h3></span></div>
+                <div class="pcds-section__body">
+                  <div class="pcds-alert pcds-success" role="status"><span class="pcds-alert__icon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span><div class="pcds-alert__body"><div class="pcds-alert__title">Generator passed</div><div class="pcds-alert__message">Load test held 30 minutes at 80 percent.</div></div></div>
+                  <div class="pcds-alert pcds-warning mt-2" role="status"><span class="pcds-alert__icon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span><div class="pcds-alert__body"><div class="pcds-alert__title">Fuel below half</div><div class="pcds-alert__message">Order a refill before the weekend.</div></div></div>
+                  <div class="pcds-alert pcds-danger mt-2" role="alert"><span class="pcds-alert__icon" aria-hidden="true"><i class="fa-solid fa-circle-xmark"></i></span><div class="pcds-alert__body"><div class="pcds-alert__title">Transfer switch failed</div><div class="pcds-alert__message">Site is on utility power only.</div></div></div>
+                </div>
+              </section>
+
+              <section class="pcds-section" data-pcds-section="group">
+                <div class="pcds-section__head"><span class="pcds-section__titles"><h3 class="pcds-section__title">Meters and tallies</h3></span></div>
+                <div class="pcds-section__body">
+                  <div class="pcds-grid">
+                    <div class="pcds-span-12 pcds-span-md-4"><div class="pcds-meter" data-pcds-meter="bar" aria-valuemin="0" aria-valuenow="7" aria-valuemax="10" aria-label="Checklist done"></div></div>
+                    <div class="pcds-span-12 pcds-span-md-4"><div class="pcds-meter" data-pcds-meter="segments" aria-valuemin="0" aria-valuenow="3" aria-valuemax="5" aria-label="Steps done"></div></div>
+                    <div class="pcds-span-12 pcds-span-md-4"><div class="pcds-meter" data-pcds-meter="ring" aria-valuemin="0" aria-valuenow="64" aria-valuemax="100" aria-label="Fuel level"></div></div>
+                  </div>
+                  <div class="pcds-cluster mt-2">
+                    <span class="pcds-tally is-done" tabindex="0" data-toggle="tooltip" data-placement="top" title="Required 3 of 3 done." aria-label="Required 3 of 3 done"><span class="pcds-count pcds-green"><i class="fa-solid fa-check" aria-hidden="true"></i>3/3</span></span>
+                    <span class="pcds-tally" tabindex="0" data-toggle="tooltip" data-placement="top" title="Required 1 of 4 done." aria-label="Required 1 of 4 done"><span class="pcds-count pcds-neutral"><i class="fa-solid fa-asterisk" aria-hidden="true"></i>1/4</span></span>
+                    <span class="pcds-tally has-err" tabindex="0" data-toggle="tooltip" data-placement="top" title="2 fields to fix." aria-label="2 fields to fix"><span class="pcds-count pcds-neutral"><i class="fa-solid fa-asterisk" aria-hidden="true"></i>2/4</span><span class="pcds-count pcds-red pcds-tally__err"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>2 to fix</span></span>
+                    <span class="pcds-tag pcds-sm pcds-neutral"><i class="fa-solid fa-eye" aria-hidden="true"></i><span>Tallies: Look only</span></span>
+                  </div>
+                  <div class="pcds-save-line mt-2" role="status">
+                    <span class="pcds-save-line__text"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i><span class="pcds-save-line__count">2 of 4 required</span><span class="pcds-save-line__count">1 of 3 recommended</span></span>
+                    <div class="pcds-meter pcds-meter--split" aria-hidden="true">
+                      <span class="pcds-meter__seg pcds-success" style="--_n: 4; --_pct: 50"><span class="pcds-meter__fill"></span></span>
+                      <span class="pcds-meter__seg pcds-warning" style="--_n: 3; --_pct: 33"><span class="pcds-meter__fill"></span></span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="pcds-section" data-pcds-section="group">
+                <div class="pcds-section__head"><span class="pcds-section__titles"><h3 class="pcds-section__title">Facts strip and auto-filled block</h3></span></div>
+                <div class="pcds-section__body">
+                  <div class="pcds-strip" data-n="4" role="group" aria-label="Key facts">
+                    <div class="pcds-strip__in">
+                      <div class="pcds-strip__cell pcds-orange"><div class="pcds-strip__label">Evacuation zone</div><div class="pcds-strip__value"><i class="fa-solid fa-house-flood-water" aria-hidden="true"></i>Zone A</div></div>
+                      <div class="pcds-strip__cell pcds-red"><div class="pcds-strip__label">Fire district</div><div class="pcds-strip__value"><i class="fa-solid fa-fire" aria-hidden="true"></i>District 12</div></div>
+                      <div class="pcds-strip__cell pcds-blue"><div class="pcds-strip__label">Generators</div><div class="pcds-strip__value"><i class="fa-solid fa-bolt" aria-hidden="true"></i>2 on site</div></div>
+                      <div class="pcds-strip__cell"><div class="pcds-strip__label">Office phone</div><div class="pcds-strip__value"><span class="pcds-unset"></span></div></div>
+                    </div>
+                  </div>
+                  <div class="pcds-autofill-host is-shown mt-3">
+                    <button type="button" class="pcds-btn pcds-sm pcds-ghost pcds-blue pcds-autofill__optin"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span>Show the facts filled in from the address</span></button>
+                    <aside class="pcds-autofill" aria-label="Filled in from the Site Address">
+                      <div class="pcds-autofill__head">
+                        <p class="pcds-autofill__t"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>Filled in from the Site Address <span class="pcds-tag pcds-sm pcds-neutral"><i class="fa-solid fa-eye" aria-hidden="true"></i><span>Look only</span></span></p>
+                        <button type="button" class="pcds-btn pcds-xs pcds-ghost pcds-autofill__hide"><i class="fa-solid fa-eye-slash" aria-hidden="true"></i><span>Hide</span></button>
+                      </div>
+                      <ul class="pcds-autofill__rows">
+                        <li class="pcds-autofill__row pcds-orange"><span class="pcds-autofill__badge" aria-hidden="true"><i class="fa-solid fa-house-flood-water"></i></span><span class="pcds-autofill__v">Zone A</span><span class="pcds-autofill__l">Evacuation zone</span><span class="pcds-src-auto pcds-tag pcds-sm" data-pcds-src="chip" data-pcds-src-from="Site Address"></span></li>
+                        <li class="pcds-autofill__row pcds-red"><span class="pcds-autofill__badge" aria-hidden="true"><i class="fa-solid fa-fire"></i></span><span class="pcds-autofill__v">District 12</span><span class="pcds-autofill__l">Fire district</span><span class="pcds-src-auto pcds-tag pcds-sm" data-pcds-src="chip" data-pcds-src-from="Site Address"></span></li>
+                        <li class="pcds-autofill__row pcds-teal"><span class="pcds-autofill__badge" aria-hidden="true"><i class="fa-solid fa-truck-medical"></i></span><span class="pcds-autofill__v">G-114</span><span class="pcds-autofill__l">EMS grid</span><span class="pcds-src-auto pcds-tag pcds-sm" data-pcds-src="chip" data-pcds-src-from="Site Address"></span></li>
+                        <li class="pcds-autofill__row pcds-indigo"><span class="pcds-autofill__badge" aria-hidden="true"><i class="fa-solid fa-city"></i></span><span class="pcds-autofill__v">Unincorporated</span><span class="pcds-autofill__l">Municipality</span><span class="pcds-src-auto pcds-tag pcds-sm" data-pcds-src="chip" data-pcds-src-from="Site Address"></span></li>
+                      </ul>
+                      <div class="pcds-autofill__chips"><span class="pcds-tag pcds-sm pcds-orange"><i class="fa-solid fa-house-flood-water" aria-hidden="true"></i><span>Zone A</span></span><span class="pcds-tag pcds-sm pcds-red"><i class="fa-solid fa-fire" aria-hidden="true"></i><span>District 12</span></span><span class="pcds-autofill__more">+2 more</span></div>
+                      <p class="pcds-autofill__sum">4 facts from the address: Zone A, District 12, G-114, Unincorporated.</p>
+                    </aside>
+                  </div>
+                </div>
+              </section>
+
+              <section class="pcds-section" data-pcds-section="group">
+                <div class="pcds-section__head"><span class="pcds-section__titles"><h3 class="pcds-section__title">Tabs and dialogs</h3></span></div>
+                <div class="pcds-section__body">
+                  <div class="pcds-tabs" aria-label="Demo tabs">
+                    <button type="button" class="pcds-tabs__tab" aria-controls="demo_tab_overview" aria-selected="true"><i class="fa-solid fa-house" aria-hidden="true"></i> Overview</button>
+                    <button type="button" class="pcds-tabs__tab" aria-controls="demo_tab_history" aria-selected="false"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> History</button>
+                    <button type="button" class="pcds-tabs__tab" aria-controls="demo_tab_notes" aria-selected="false"><i class="fa-solid fa-note-sticky" aria-hidden="true"></i> Notes</button>
+                  </div>
+                  <div class="pcds-tabs__panel" id="demo_tab_overview"><p class="mt-2 mb-0">Overview panel. Arrow keys, Home and End move between tabs.</p></div>
+                  <div class="pcds-tabs__panel" id="demo_tab_history" hidden="hidden"><p class="mt-2 mb-0">History panel. Three checks this month, all passed.</p></div>
+                  <div class="pcds-tabs__panel" id="demo_tab_notes" hidden="hidden"><p class="mt-2 mb-0">Notes panel. Gate sticks in wet weather.</p></div>
+                  <div class="pcds-cluster mt-3" data-pcds-labels="keep">
+                    <button type="button" class="pcds-btn pcds-sm pcds-soft pcds-indigo" data-pcdstest-open="dlg-keys"><i class="fa-solid fa-keyboard" aria-hidden="true"></i><span>Open the keys sheet</span></button>
+                    <button type="button" class="pcds-btn pcds-sm pcds-soft pcds-red" data-pcdstest-open="dlg-confirm"><i class="fa-solid fa-trash-can" aria-hidden="true"></i><span>Open a confirm dialog</span></button>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </details>
+
+          <!-- ================= [ 12. Empty, failed and waiting ] ================= -->
+          <details class="pcds-section" id="sec-empty" open="open">
+            <summary class="pcds-section__head">
+              <span class="pcds-section__lead" aria-hidden="true"><i class="fa-solid fa-caret-down"></i></span>
+              <span class="pcds-surface__icon pcds-grey" aria-hidden="true"><i class="fa-solid fa-inbox"></i></span>
+              <span class="pcds-section__titles"><h2 class="pcds-section__title">Empty, Failed and Waiting</h2></span>
+              <span class="pcds-section__actions pcds-cluster"><span class="pcds-tag pcds-sm pcds-neutral"><i class="fa-solid fa-ban" aria-hidden="true"></i><span>Saves nothing</span></span></span>
+              <span class="pcds-section__sub">Empty row, failed row, empty line, empty card and the veil.</span>
+            </summary>
+            <div class="pcds-section__body">
+              <div class="pcds-empty-row is-failed" role="alert">
+                <div class="pcds-empty-row__in">
+                  <span class="pcds-empty-row__icon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                  <div class="pcds-empty-row__txt">
+                    <div class="pcds-empty-row__title">Could not load inspections</div>
+                    <div class="pcds-empty-row__msg">The feed did not answer. Your form is safe.</div>
+                  </div>
+                  <button type="button" class="pcds-btn pcds-sm pcds-soft pcds-red"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i><span>Try again</span></button>
+                </div>
+              </div>
+              <div class="pcds-empty-row mt-2">
+                <div class="pcds-empty-row__in">
+                  <span class="pcds-empty-row__icon" aria-hidden="true"><i class="fa-solid fa-filter"></i></span>
+                  <div class="pcds-empty-row__txt">
+                    <div class="pcds-empty-row__title">No inspections match these filters</div>
+                    <div class="pcds-empty-row__msg">Clear a filter to see more.</div>
+                  </div>
+                  <button type="button" class="pcds-btn pcds-sm pcds-soft pcds-grey"><i class="fa-solid fa-filter-circle-xmark" aria-hidden="true"></i><span>Clear filters</span></button>
+                </div>
+              </div>
+              <p class="pcds-empty-line mt-2"><i class="fa-solid fa-truck" aria-hidden="true"></i><span>No deliveries scheduled.</span></p>
+              <div class="pcds-empty-stage mt-2">
+                <div class="pcds-empty-card pcds-blue" role="status">
+                  <div class="pcds-empty-card__icon" aria-hidden="true"><i class="fa-solid fa-clipboard-check"></i></div>
+                  <div class="pcds-empty-card__title">Nothing to review</div>
+                  <div class="pcds-empty-card__divider" aria-hidden="true"></div>
+                  <div class="pcds-empty-card__msg">Every test record this week has been signed off.</div>
+                  <div class="pcds-empty-card__actions"><button type="button" class="pcds-btn pcds-sm pcds-soft pcds-neutral"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Back</span></button></div>
+                </div>
+              </div>
+              <div class="pcds-surface pcds-veil is-waiting mt-3" aria-busy="true">
+                <div class="pcds-surface__body"><p class="mb-0">Linked records would draw here.</p><p class="mb-0">The veil covers them while they load.</p></div>
+                <div class="pcds-veil__status" role="status">Loading linked records</div>
+              </div>
+            </div>
+          </details>
+
+          <!-- ================= [ Record Metadata: WebEOC Dev only ] ================= -->
+          <details aria-label="Record Metadata" class="pcds-section d-none" data-section="record-metadata" id="sec-meta">
+            <if test="contains(/data/@positionname, 'WebEOC Dev')">
+              <attribute name="class">pcds-section</attribute>
+            </if>
+            <summary class="pcds-section__head">
+              <span class="pcds-section__lead" aria-hidden="true"><i class="fa-solid fa-caret-down"></i></span>
+              <span class="pcds-surface__icon pcds-grey" aria-hidden="true"><i class="fa-solid fa-code"></i></span>
+              <span class="pcds-section__titles"><h2 class="pcds-section__title">Record Metadata</h2></span>
+              <span class="pcds-section__actions pcds-cluster"><span class="pcds-tag pcds-sm pcds-quiet pcds-neutral"><i class="fa-solid fa-code" aria-hidden="true"></i><span>WebEOC Dev</span></span></span>
+            </summary>
+            <div class="pcds-section__body pcds-grid--form">
+              <div class="pcds-grid">
+                <div class="pcds-field pcds-span-12 pcds-span-md-3">
+                  <label for="origin_name">origin_name</label>
+                  <input id="origin_name" class="form-control" type="text" name="origin_name" label="origin_name" readonly="readonly" />
+                </div>
+                <div class="pcds-field pcds-span-12 pcds-span-md-3">
+                  <label for="origin_position">origin_position</label>
+                  <input id="origin_position" class="form-control" type="text" name="origin_position" label="origin_position" readonly="readonly" />
+                </div>
+                <div class="pcds-field pcds-span-12 pcds-span-md-3">
+                  <label for="origin_email">origin_email</label>
+                  <input id="origin_email" class="form-control" type="text" name="origin_email" label="origin_email" readonly="readonly" />
+                </div>
+                <div class="pcds-field pcds-span-12 pcds-span-md-3">
+                  <label for="origin_datetime">origin_datetime</label>
+                  <input id="origin_datetime" class="form-control" type="text" name="origin_datetime" label="origin_datetime" readonly="readonly" />
+                </div>
+              </div>
+              <div class="pcds-grid">
+                <div class="pcds-field pcds-span-12 pcds-span-md-3">
+                  <label for="edit_name">edit_name</label>
+                  <input id="edit_name" class="form-control" type="text" name="edit_name" label="edit_name" readonly="readonly" />
+                </div>
+                <div class="pcds-field pcds-span-12 pcds-span-md-3">
+                  <label for="edit_position">edit_position</label>
+                  <input id="edit_position" class="form-control" type="text" name="edit_position" label="edit_position" readonly="readonly" />
+                </div>
+                <div class="pcds-field pcds-span-12 pcds-span-md-3">
+                  <label for="edit_email">edit_email</label>
+                  <input id="edit_email" class="form-control" type="text" name="edit_email" label="edit_email" readonly="readonly" />
+                </div>
+                <div class="pcds-field pcds-span-12 pcds-span-md-3">
+                  <label for="edit_datetime">edit_datetime</label>
+                  <input id="edit_datetime" class="form-control" type="text" name="edit_datetime" label="edit_datetime" readonly="readonly" />
+                </div>
+              </div>
+            </div>
+          </details>
+        </main>
+
+        <!-- ================= [ Footer ] ================= -->
+        <footer class="pcds-shell__foot">
+          <div class="pcds-stack">
+            <div class="pcds-completion" data-pcds-completion-form="#input-form" data-pcds-completion-label="required fields"></div>
+            <div class="pcds-ends">
+              <returnbutton button="return-button" class="pcds-cancel">Cancel</returnbutton>
+              <savebutton class="pcds-save">Save</savebutton>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </form>
+
+    <!-- ================= [ Dialogs ] ================= -->
+    <dialog class="pcds-dialog" id="dlg-keys" aria-labelledby="dlg_keys_t">
+      <div class="pcds-dialog__head">
+        <h2 class="pcds-dialog__title" id="dlg_keys_t"><i class="fa-solid fa-keyboard" aria-hidden="true"></i>Keyboard shortcuts</h2>
+        <button type="button" class="pcds-btn pcds-ghost pcds-icon" aria-label="Close" data-pcdstest-close="true"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+      </div>
+      <div class="pcds-dialog__body">
+        <h3 class="pcds-keys__group">This form</h3>
+        <dl class="pcds-keys">
+          <dt><kbd class="pcds-kbd">Esc</kbd></dt><dd>Clear a field with a clear x</dd>
+          <dt><kbd class="pcds-kbd">&#8593;</kbd><kbd class="pcds-kbd">&#8595;</kbd></dt><dd>Step a number by 1</dd>
+          <dt><kbd class="pcds-kbd">Shift</kbd><kbd class="pcds-kbd">&#8593;</kbd></dt><dd>Step a number by 10</dd>
+        </dl>
+        <h3 class="pcds-keys__group">Dates</h3>
+        <dl class="pcds-keys">
+          <dt><kbd class="pcds-kbd">Alt</kbd><kbd class="pcds-kbd">&#8595;</kbd></dt><dd>Open the calendar</dd>
+          <dt><kbd class="pcds-kbd">Enter</kbd></dt><dd>Pick the focused day</dd>
+        </dl>
+      </div>
+      <div class="pcds-dialog__foot"><button type="button" class="pcds-btn pcds-ghost" data-pcdstest-close="true">Close</button></div>
+    </dialog>
+    <dialog class="pcds-dialog pcds-red" id="dlg-confirm" aria-labelledby="dlg_confirm_t">
+      <div class="pcds-dialog__head">
+        <h2 class="pcds-dialog__title" id="dlg_confirm_t"><i class="fa-solid fa-trash-can" aria-hidden="true"></i>Delete this test record?</h2>
+        <button type="button" class="pcds-btn pcds-ghost pcds-icon" aria-label="Close" data-pcdstest-close="true"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+      </div>
+      <div class="pcds-dialog__body"><p class="mb-0">This is a demo. Nothing is deleted.</p></div>
+      <div class="pcds-dialog__foot">
+        <button type="button" class="pcds-cancel" data-pcdstest-close="true">Cancel</button>
+        <button type="button" class="pcds-delete" data-pcdstest-close="true">Delete</button>
+      </div>
+    </dialog>
+
+    <!-- ================= [ Hidden Metadata: outside the form ] ================= -->
+    <section class="d-none" data-section="record-metadata">
+      <span data-dataid="{/data/@dataid}" data-positionname="{/data/@positionname}" data-realname="{/data/userdetail/@realname}" data-sessionemail="{concat(normalize-space(/data/SessionDetail/Sessions/@email), substring(/data/userdetail/@primaryemail, 1, string-length(/data/userdetail/@primaryemail) * not(normalize-space(/data/SessionDetail/Sessions/@email))))}" data-sessionname="{/data/SessionDetail/Sessions/@name}" data-username="{/data/@username}" id="user-data-holder"></span>
+      <span id="view-data-data">
+        <for-each select="/data/@*">
+          <attribute name="data-{name()}">
+            <value-of select="." />
+          </attribute>
+        </for-each>
+      </span>
+      <span id="view-data-session">
+        <for-each select="/data/SessionDetail/Sessions/@*">
+          <attribute name="data-{name()}">
+            <value-of select="." />
+          </attribute>
+        </for-each>
+      </span>
+      <span id="view-data-userdetail">
+        <for-each select="/data/userdetail/@*">
+          <attribute name="data-{name()}">
+            <value-of select="." />
+          </attribute>
+        </for-each>
+      </span>
+      <span id="view-data-records">
+        <for-each select="/data/*[starts-with(name(), 'table_')]">
+          <div class="vd-record" data-tablename="{local-name()}">
+            <for-each select="@*">
+              <attribute name="data-{name()}">
+                <value-of select="." />
+              </attribute>
+            </for-each>
+          </div>
+        </for-each>
+      </span>
+      <span id="view-data-permissions">
+        <for-each select="/data/assignedboardpermissiontags/boardpermissiontag">
+          <div class="vd-permission" data-name="{@name}"></div>
+        </for-each>
+      </span>
+    </section>
+
+    <script src="//webeocboardfiles.juvare.com/board/latest/js/core/jquery.min.js"></script>
+    <script src="//webeocboardfiles.juvare.com/board/latest/js/core/popper.min.js"></script>
+    <script src="//webeocboardfiles.juvare.com/board/latest/js/core/bootstrap-material-design.min.js"></script>
+    <script crossorigin="anonymous" src="https://kit.fontawesome.com/d0f6f2aafc.js"></script>
+    <!-- Google Places for the geocode add-on. Replace GOOGLE_MAPS_KEY with the
+         board key (the same one LOG Input-Event Record loads). Without it the
+         address search stays a plain text box and everything else still runs. -->
+    <script async="true" src="https://maps.googleapis.com/maps/api/js?key=GOOGLE_MAPS_KEY&amp;libraries=places&amp;loading=async&amp;v=weekly"></script>
+    <script boardresource="pcds-libs.js" type="text/javascript"></script>
+    <script boardresource="pcds-core.js" type="text/javascript"></script>
+    <script boardresource="pcds-addon-textscale.js" type="text/javascript"></script>
+    <script boardresource="pcds-addon-geocode.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      //<![CDATA[
+      /* Test page wiring only. Everything else on this page is the core's own
+         enhance pass. This starts the form watcher, registers the page tour
+         from the data-tour-step sections, and opens the two demo dialogs. */
+      (function () {
+        'use strict';
+        function boot() {
+          var core = window.pcds;
+          if (!core) {
+            console.error('PCDS core test: pcds-core.js did not load. Check the board resources.');
+            return;
+          }
+          if (core.Form && core.Form.init) core.Form.init({ root: '#input-form' });
+          if (core.Tour && core.Tour.register && core.Tour.fromDataAttributes) {
+            core.Tour.register('pcdstest:layout', core.Tour.fromDataAttributes('#input-form'), { label: 'Page tour' });
+          }
+        }
+        document.addEventListener('click', function (e) {
+          var t = e.target;
+          if (!t || !t.closest) return;
+          var open = t.closest('[data-pcdstest-open]');
+          if (open) {
+            e.preventDefault();
+            var dlg = document.getElementById(open.getAttribute('data-pcdstest-open'));
+            if (dlg && dlg.showModal) dlg.showModal();
+            return;
+          }
+          var close = t.closest('[data-pcdstest-close]');
+          if (close) {
+            var host = close.closest('dialog');
+            if (host) host.close();
+            return;
+          }
+          if (t.closest('[data-pcdstest-print]')) {
+            e.preventDefault();
+            window.print();
+          }
+        });
+        if (window.pcds && window.pcds.onDomReady) window.pcds.onDomReady(boot);
+        else if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+        else boot();
+      })();
+      //]]>
+    </script>
+  </body>
+</html>
