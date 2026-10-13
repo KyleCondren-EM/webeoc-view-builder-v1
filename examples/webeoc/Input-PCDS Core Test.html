@@ -15,7 +15,11 @@
      actions, statement card acknowledge, section tallies, save line track,
      live rules, auto filled block gate, keys registry.
      Save is the native savebutton. Audit columns ride insertfields and
-     updatefields and bind through the Record Metadata section. -->
+     updatefields and bind through the Record Metadata section.
+     Every hardcoded input, select and textarea carries a name: a nameless
+     one fails publish with "" contains invalid characters. The typed date
+     boxes are nameless by design, so a script builds them before the core
+     loads. Needs the pcds-core.css that hides a closed dialog.pcds-dialog. -->
   <head>
     <title>PCDS Core Test</title>
     <meta charset="utf-8" />
@@ -25,15 +29,6 @@
     <link href="//webeocboardfiles.juvare.com/board/latest/css/material-kit.min.css" media="all" path="/css/material-kit.min.css" rel="stylesheet" />
     <link boardresource="pcds-libs.css" rel="stylesheet" />
     <link boardresource="pcds-core.css" rel="stylesheet" />
-    <style type="text/css">
-      /*<![CDATA[*/
-      /* CORE GAP, view-local until pcds-core.css carries it: Juvare
-         material-kit.min.css (Bootstrap reboot) sets dialog display block,
-         and the core styles only .pcds-dialog[open], so a closed authored
-         dialog draws inline at the foot of the page. */
-      dialog.pcds-dialog:not([open]) { display: none; }
-      /*]]>*/
-    </style>
   </head>
   <body>
     <applytheme />
@@ -265,7 +260,6 @@
                 <div class="pcds-field pcds-date-field pcds-span-12 pcds-span-md-4" data-pcds-date="date">
                   <label for="test_date_txt">Inspection Date</label>
                   <div class="input-group pcds-date">
-                    <input id="test_date_txt" class="form-control" type="text" inputmode="numeric" autocomplete="off" placeholder="MM/DD/YYYY" aria-describedby="test_date_fmt" />
                     <button type="button" class="input-group-addon pcds-date__btn" aria-haspopup="dialog" aria-expanded="false" aria-label="Choose a date for Inspection Date"><i class="fa-regular fa-calendar" aria-hidden="true"></i></button>
                   </div>
                   <input type="hidden" class="pcds-date__val" id="test_date" name="test_date" label="Inspection Date" />
@@ -274,7 +268,6 @@
                 <div class="pcds-field pcds-date-field pcds-span-12 pcds-span-md-4" data-pcds-date="time" data-minute-step="15">
                   <label for="test_time_txt">Start Time</label>
                   <div class="input-group pcds-date">
-                    <input id="test_time_txt" class="form-control" type="text" autocomplete="off" placeholder="h:mm AM" aria-describedby="test_time_fmt" />
                     <button type="button" class="input-group-addon pcds-date__btn" aria-haspopup="dialog" aria-expanded="false" aria-label="Choose a time for Start Time"><i class="fa-regular fa-clock" aria-hidden="true"></i></button>
                   </div>
                   <input type="hidden" class="pcds-date__val" id="test_time" name="test_time" label="Start Time" />
@@ -283,7 +276,6 @@
                 <div class="pcds-field pcds-date-field pcds-span-12 pcds-span-md-4" data-pcds-date="datetime">
                   <label for="test_datetime_txt">Next Check Due</label>
                   <div class="input-group pcds-date">
-                    <input id="test_datetime_txt" class="form-control" type="text" autocomplete="off" placeholder="MM/DD/YYYY h:mm AM" aria-describedby="test_datetime_fmt" />
                     <button type="button" class="input-group-addon pcds-date__btn" aria-haspopup="dialog" aria-expanded="false" aria-label="Choose a date and time for Next Check Due"><i class="fa-regular fa-calendar-check" aria-hidden="true"></i></button>
                   </div>
                   <input type="hidden" class="pcds-date__val" id="test_datetime" name="test_datetime" label="Next Check Due" />
@@ -1130,6 +1122,39 @@
          board key (the same one LOG Input-Event Record loads). Without it the
          address search stays a plain text box and everything else still runs. -->
     <script async="true" src="https://maps.googleapis.com/maps/api/js?key=GOOGLE_MAPS_KEY&amp;libraries=places&amp;loading=async&amp;v=weekly"></script>
+    <script type="text/javascript">
+      //<![CDATA[
+      /* Typed date boxes. DesignStudio refuses to publish a hardcoded input
+         with no name ("" contains invalid characters), and the core's typed
+         date wants its visible box NAMELESS so only the hidden .pcds-date__val
+         holder saves. So the view authors the group and the holder, and this
+         builds each box BEFORE pcds-core.js loads: the core's DateField refuses
+         a field for good if its first pass finds no box. Belongs in the core
+         (DateField mount building a missing box); view-local until then. */
+      (function () {
+        'use strict';
+        var HINT = { date: 'MM/DD/YYYY', time: 'h:mm AM', datetime: 'MM/DD/YYYY h:mm AM' };
+        var fields = document.querySelectorAll('[data-pcds-date]');
+        for (var i = 0; i < fields.length; i++) {
+          var field = fields[i];
+          var group = field.querySelector('.pcds-date');
+          var holder = field.querySelector('input.pcds-date__val[name]');
+          if (!group || !holder || group.querySelector('input')) continue;
+          var kind = field.getAttribute('data-pcds-date');
+          var box = document.createElement('input');
+          box.type = 'text';
+          box.className = 'form-control';
+          box.id = holder.id + '_txt';
+          box.autocomplete = 'off';
+          box.placeholder = HINT[kind] || '';
+          if (kind === 'date') box.inputMode = 'numeric';
+          var fmt = field.querySelector('.pcds-help-line[id]');
+          if (fmt) box.setAttribute('aria-describedby', fmt.id);
+          group.insertBefore(box, group.firstChild);
+        }
+      })();
+      //]]>
+    </script>
     <script boardresource="pcds-libs.js" type="text/javascript"></script>
     <script boardresource="pcds-core.js" type="text/javascript"></script>
     <script boardresource="pcds-addon-textscale.js" type="text/javascript"></script>
